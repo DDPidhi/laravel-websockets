@@ -10,6 +10,7 @@ class TriggerEventController extends Controller
 {
     public function __invoke(Request $request)
     {
+
         $this->ensureValidSignature($request);
         $payload = $request->json();
 
@@ -32,16 +33,21 @@ class TriggerEventController extends Controller
                 'data' => $request->json()->get('data'),
             ], $request->json()->get('socket_id'));
 
+            // Convert the data to a string for DashboardLogger
+            $dataString = json_encode($request->json()->get('data'));
+
             DashboardLogger::apiMessage(
                 $request->appId,
                 $channelName,
                 $request->json()->get('name'),
-                $request->json()->get('data')
+                $dataString
             );
 
             StatisticsLogger::apiMessage($request->appId);
         }
 
-        return (object) [];
+        return (object) [
+            'status' => 200
+        ];
     }
 }
